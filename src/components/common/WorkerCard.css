@@ -1,0 +1,12 @@
+.worker-card { display: flex; flex-direction: column; gap: 0.8rem; padding: 1.2rem; cursor: pointer; color: inherit; }
+.worker-card__header { display: flex; align-items: center; gap: 0.9rem; }
+.worker-card__avatar { position: relative; width: 52px; height: 52px; border-radius: 50%; background: var(--primary); color: var(--white); font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.worker-card__avatar img { width: 52px; height: 52px; border-radius: 50%; object-fit: cover; }
+.worker-card__available { position: absolute; bottom: 2px; right: 2px; width: 11px; height: 11px; background: var(--success); border: 2px solid var(--white); border-radius: 50%; }
+.worker-card__name { font-size: 1rem; font-weight: 700; color: var(--dark); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; }
+.worker-card__verified { color: #3B82F6; }
+.worker-card__body { display: flex; flex-direction: column; gap: 0.35rem; padding-top: 0.4rem; border-top: 1px solid var(--border); }
+.worker-card__row { display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem; color: var(--gray); }
+.worker-card__rate { font-size: 1rem; font-weight: 800; color: var(--primary); }
+.worker-card__rate small { font-size: 0.72rem; color: var(--gray); font-weight: 400; }
+.worker-card__footer { display: flex; align-items: center; justify-content: space-between; padding-top: 0.6rem; border-top: 1px solid var(--border); margin-top: auto; }
