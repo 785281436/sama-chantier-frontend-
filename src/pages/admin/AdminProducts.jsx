@@ -6,15 +6,42 @@ import { toast } from 'react-toastify'
 import api from '../../utils/api'
 
 const CATEGORIES = ['carreaux','ciment','peinture','fer','bois','plomberie','electricite','outillage','autre']
-const EMPTY = { name: '', description: '', price: '', stock: '', unit: 'pièce', category: 'carreaux', brand: '', featured: false }
-
+const EMPTY = { name: '', description: '', price: '', stock: '', unit: 'pièce', category: 'carreaux', brand: '', featured: false, images: [] }
 export default function AdminProducts() {
   const [products, setProducts] = useState([])
   const [loading, setLoading]   = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing]   = useState(null)
   const [form, setForm]         = useState(EMPTY)
+const [imageFile, setImageFile]     = useState(null)
+const [imagePreview, setImagePreview] = useState('')
+const [uploading, setUploading]     = useState(false)
 
+const handleImageChange = (e) => {
+  const file = e.target.files[0]
+  if (file) {
+    setImageFile(file)
+    setImagePreview(URL.createObjectURL(file))
+  }
+}
+
+const uploadImage = async () => {
+  if (!imageFile) return null
+  setUploading(true)
+  try {
+    const formData = new FormData()
+    formData.append('image', imageFile)
+    const { data } = await api.post('/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    return data.url
+  } catch (err) {
+    toast.error("Erreur upload image")
+    return null
+  } finally {
+    setUploading(false)
+  }
+}
   const load = async () => {
     try {
       const { data } = await api.get('/products?limit=50')
@@ -24,29 +51,41 @@ export default function AdminProducts() {
     setLoading(false)
   }
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+   
   useEffect(() => { load() }, [])
 
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    try {
-      if (editing) {
-        await api.put(`/products/${editing}`, form)
-        toast.success('Produit modifié !')
-      } else {
-        await api.post('/products', form)
-        toast.success('Produit créé !')
-      }
-      setShowForm(false)
-      setEditing(null)
-      setForm(EMPTY)
-      load()
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Erreur')
+  
+    const handleSubmit = async (e) => {
+  e.preventDefault()
+  try {
+    let imageUrl = form.images?.[0] || ''
+    
+    if (imageFile) {
+      const uploaded = await uploadImage()
+      if (uploaded) imageUrl = uploaded
     }
+
+    const productData = { ...form, images: imageUrl ? [imageUrl] : [] }
+
+    if (editing) {
+      await api.put(`/products/${editing}`, productData)
+      toast.success('Produit modifié !')
+    } else {
+      await api.post('/products', productData)
+      toast.success('Produit créé !')
+    }
+    setShowForm(false)
+    setEditing(null)
+    setForm(EMPTY)
+    setImageFile(null)
+    setImagePreview('')
+    load()
+  } catch (err) {
+    toast.error(err.response?.data?.message || 'Erreur')
   }
+}
 
   const handleEdit = (p) => {
     setForm({
@@ -57,7 +96,8 @@ export default function AdminProducts() {
       unit: p.unit,
       category: p.category,
       brand: p.brand || '',
-      featured: p.featured
+      featured: p.featured,
+      images: p.images || []
     })
     setEditing(p._id)
     setShowForm(true)
@@ -127,6 +167,35 @@ export default function AdminProducts() {
                 <label>Description *</label>
                 <textarea className="form-control" rows={3} value={form.description} onChange={set('description')} required />
               </div>
+              <div className="form-group">
+  <label>Description *</label>
+  <textarea className="form-control" rows={3} value={form.description} onChange={set('description')} required />
+</div>
+
+{/* ← Ajoute ici */}
+<div className="form-group">
+  <label>Image du produit</label>
+  <input
+    type="file"
+    accept="image/*"
+    onChange={handleImageChange}
+    className="form-control"
+  />
+  {imagePreview && (
+    <img
+      src={imagePreview}
+      alt="Preview"
+      style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 8, marginTop: '0.8rem' }}
+    />
+  )}
+  {!imagePreview && form.images?.[0] && (
+    <img
+      src={form.images[0]}
+      alt="Image actuelle"
+      style={{ width: '100%', maxHeight: 200, objectFit: 'cover', borderRadius: 8, marginTop: '0.8rem' }}
+    />
+  )}
+</div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
                 <input type="checkbox" id="featured" checked={form.featured}
                   onChange={e => setForm(f => ({ ...f, featured: e.target.checked }))} />

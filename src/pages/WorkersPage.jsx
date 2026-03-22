@@ -4,7 +4,16 @@ import { Link } from 'react-router-dom'
 import { FiSearch, FiMapPin, FiStar, FiCheckCircle } from 'react-icons/fi'
 import api from '../utils/api'
 
-const SPECIALTIES = ['maçon','carreleur','plombier','electricien','peintre','menuisier','soudeur','autre']
+const SPECIALTIES = [
+  { value: 'macon',       label: 'Maçon' },
+  { value: 'carreleur',   label: 'Carreleur' },
+  { value: 'plombier',    label: 'Plombier' },
+  { value: 'electricien', label: 'Électricien' },
+  { value: 'peintre',     label: 'Peintre' },
+  { value: 'menuisier',   label: 'Menuisier' },
+  { value: 'soudeur',     label: 'Soudeur' },
+  { value: 'autre',       label: 'Autre' },
+]
 const CITIES = ['Dakar','Thiès','Saint-Louis','Ziguinchor','Kaolack','Mbour']
 
 export default function WorkersPage() {
@@ -49,7 +58,7 @@ export default function WorkersPage() {
           <select className="form-control" style={{ maxWidth: 180 }}
             value={filters.specialty} onChange={e => apply({ specialty: e.target.value })}>
             <option value="">Toutes spécialités</option>
-            {SPECIALTIES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>)}
+            {SPECIALTIES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
           </select>
           <select className="form-control" style={{ maxWidth: 150 }}
             value={filters.city} onChange={e => apply({ city: e.target.value })}>
