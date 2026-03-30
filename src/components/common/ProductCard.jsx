@@ -16,7 +16,12 @@ export default function ProductCard({ product }) {
   return (
     <Link to={`/produits/${product._id}`} className="product-card card">
       <div className="product-card__img">
-        <img src={product.images?.[0] || 'https://placehold.co/300x200?text=Produit'} alt={product.name} />
+        <img
+          src={product.images?.[0] || 'https://placehold.co/300x200?text=Produit'}
+          alt={product.name}
+          loading="lazy"
+          onError={e => { e.target.src = 'https://placehold.co/300x200?text=Produit' }}
+        />
         {product.stock === 0 && <span className="product-card__out">Rupture</span>}
         {product.featured && <span className="product-card__featured">⭐ Vedette</span>}
       </div>

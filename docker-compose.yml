@@ -1,0 +1,36 @@
+# Depuis ce dossier : docker compose up --build
+# Créer ../sama-chantier-backend/.env (voir .env.example : MONGO_URI + CLIENT_URL pour Docker)
+services:
+  mongo:
+    image: mongo:7
+    container_name: sama-chantier-mongo
+    restart: unless-stopped
+    volumes:
+      - sama_mongo_data:/data/db
+
+  backend:
+    build: ../sama-chantier-backend
+    container_name: sama-chantier-api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - ../sama-chantier-backend/.env
+    depends_on:
+      - mongo
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ""
+    container_name: sama-chantier-web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  sama_mongo_data:

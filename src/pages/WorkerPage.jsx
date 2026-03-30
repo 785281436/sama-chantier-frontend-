@@ -2,7 +2,7 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { FiStar, FiMapPin, FiPhone, FiCheckCircle, FiArrowLeft, FiBriefcase } from 'react-icons/fi'
+import { FiStar, FiMapPin, FiPhone, FiCheckCircle, FiArrowLeft, FiBriefcase, FiMail, FiImage } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import api from '../utils/api'
 import { useAuth } from '../context/AuthContext'
@@ -93,6 +93,12 @@ export default function WorkerPage() {
                   <FiPhone /> Contacter
                 </a>
               )}
+              {user && u._id && String(user._id) !== String(u._id) && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.6rem' }}>
+                  <Link to={`/devis?worker=${id}`} className="btn btn-outline btn-sm">Demander un devis</Link>
+                  <Link to={`/messages?to=${u._id}`} className="btn btn-outline btn-sm"><FiMail style={{ verticalAlign: 'middle' }} /> Écrire</Link>
+                </div>
+              )}
             </div>
           </div>
           {worker.bio && (
@@ -106,6 +112,21 @@ export default function WorkerPage() {
             </div>
           )}
         </div>
+
+        {worker.portfolio?.length > 0 && (
+          <div className="card" style={{ padding: '1.5rem', marginBottom: '1.5rem' }}>
+            <h2 style={{ fontWeight: 800, marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <FiImage /> Réalisations (portfolio)
+            </h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.65rem' }}>
+              {worker.portfolio.map((url, i) => (
+                <a key={i} href={url} target="_blank" rel="noreferrer" style={{ borderRadius: 8, overflow: 'hidden', aspectRatio: '1', background: 'var(--gray-light)' }}>
+                  <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.style.display = 'none' }} />
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Avis */}
         <h2 style={{ fontWeight: 800, marginBottom: '1rem' }}>Avis ({reviews.length})</h2>

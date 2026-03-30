@@ -26,6 +26,9 @@ import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminProducts  from './pages/admin/AdminProducts'
 import AdminOrders    from './pages/admin/AdminOrders'
 import AdminWorkers   from './pages/admin/AdminWorkers'
+import QuotesPage     from './pages/QuotesPage'
+import MessagesPage   from './pages/MessagesPage'
+import PaymentReturnPage from './pages/PaymentReturnPage'
 
 function App() {
   return (
@@ -49,6 +52,9 @@ function App() {
                 <Route path="/profil"         element={<ProfilePage />} />
                 <Route path="/mes-commandes"  element={<OrdersPage />} />
                 <Route path="/mes-commandes/:id" element={<OrderDetailPage />} />
+                <Route path="/devis"           element={<QuotesPage />} />
+                <Route path="/messages"        element={<MessagesPage />} />
+                <Route path="/paiement/retour" element={<PaymentReturnPage />} />
               </Route>
 
               <Route element={<AdminRoute />}>
