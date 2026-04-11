@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { FiArrowLeft, FiMapPin, FiPhone } from 'react-icons/fi'
 import api from '../utils/api'
+import { toast } from 'react-toastify'
 
 const STATUS_STEPS = ['en_attente','confirme','en_livraison','livre']
 const STATUS_FR    = { en_attente:'En attente', confirme:'Confirmé', en_livraison:'En livraison', livre:'Livré', annule:'Annulé' }
@@ -10,6 +11,7 @@ export default function OrderDetailPage() {
   const { id } = useParams()
   const [order, setOrder]     = useState(null)
   const [loading, setLoading] = useState(true)
+  const [paying, setPaying]   = useState(false)
 
   useEffect(() => {
     api.get(`/orders/${id}`)
@@ -17,6 +19,21 @@ export default function OrderDetailPage() {
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [id])
+
+  const handleCinetPayPayment = async () => {
+    if (!order || order.isPaid) return
+    
+    setPaying(true)
+    try {
+      const { data } = await api.post('/payments/cinetpay/init', {
+        orderId: order._id
+      })
+      window.location.href = data.paymentUrl
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Erreur lors de l\'initialisation du paiement')
+      setPaying(false)
+    }
+  }
 
   if (loading) return <div className="spinner" style={{ marginTop: '4rem' }} />
   if (!order)  return <div className="container" style={{ padding: '3rem 0', color: 'var(--gray)' }}>Commande introuvable.</div>
@@ -90,12 +107,36 @@ export default function OrderDetailPage() {
               <FiPhone size={13} />{order.shippingAddress?.phone}
             </p>
           </div>
+          
           <div className="card" style={{ padding: '1.2rem' }}>
             <h3 style={{ fontWeight: 700, marginBottom: '0.7rem' }}>Paiement</h3>
             <p style={{ color: 'var(--gray)', fontSize: '0.9rem' }}>Mode : <strong>{order.paymentMethod?.replace('_', ' ')}</strong></p>
             <p style={{ color: order.isPaid ? 'var(--success)' : 'var(--warning)', fontWeight: 700, marginTop: '0.3rem', fontSize: '0.9rem' }}>
               {order.isPaid ? '✅ Payé' : '⏳ En attente'}
             </p>
+            
+            {!order.isPaid && order.paymentMethod === 'cinetpay' && (
+              <button 
+                onClick={handleCinetPayPayment}
+                disabled={paying}
+                style={{
+                  marginTop: '1rem',
+                  width: '100%',
+                  padding: '0.75rem',
+                  background: 'var(--primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  fontWeight: 700,
+                  fontSize: '1rem',
+                  cursor: paying ? 'not-allowed' : 'pointer',
+                  opacity: paying ? 0.7 : 1,
+                  transition: 'all 0.2s'
+                }}
+              >
+                {paying ? '⏳ Chargement...' : '💳 Payer avec CinetPay'}
+              </button>
+            )}
           </div>
         </div>
       </div>
