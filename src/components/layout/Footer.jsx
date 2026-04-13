@@ -45,7 +45,6 @@ export default function Footer() {
       <div className="footer__bottom">
         <div className="container">
           <p>© {new Date().getFullYear()} Sama Chantier — Tous droits réservés</p>
-          <p>Développé avec ❤️ au Sénégal</p>
         </div>
       </div>
     </footer>
