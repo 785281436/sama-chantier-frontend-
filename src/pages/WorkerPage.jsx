@@ -2,10 +2,12 @@
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { FiStar, FiMapPin, FiPhone, FiCheckCircle, FiArrowLeft, FiBriefcase, FiMail, FiImage } from 'react-icons/fi'
+import { FiStar, FiMapPin, FiCheckCircle, FiArrowLeft, FiBriefcase, FiMail, FiImage } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import api from '../utils/api'
 import { useAuth } from '../context/AuthContext'
+import WhatsAppButton from '../components/common/WhatsAppButton'
+import DisponibiliteBadge from '../components/common/DisponibiliteBadge'
 
 export default function WorkerPage() {
   const { id } = useParams()
@@ -65,14 +67,12 @@ export default function WorkerPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.4rem' }}>
                 <h1 style={{ fontSize: '1.5rem', fontWeight: 800 }}>{u.name}</h1>
                 {worker.isVerified && <span style={{ color: '#3B82F6', display: 'flex', alignItems: 'center', gap: 3, fontSize: '0.85rem' }}><FiCheckCircle /> Vérifié</span>}
-                <span className={`badge ${worker.availability ? 'badge-success' : 'badge-error'}`}>
-                  {worker.availability ? 'Disponible' : 'Indisponible'}
-                </span>
+                {/* Badge disponibilité intelligent */}
+                <DisponibiliteBadge disponible={worker.availability} />
               </div>
               <p style={{ color: 'var(--primary)', fontWeight: 700, marginBottom: '0.5rem' }}>{worker.specialty}</p>
               <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', color: 'var(--gray)', fontSize: '0.88rem' }}>
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiMapPin size={13} />{worker.city}</span>
-                {u.phone && <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiPhone size={13} />{u.phone}</span>}
                 <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><FiBriefcase size={13} />{worker.experience} ans d'exp.</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: '0.5rem' }}>
@@ -81,18 +81,24 @@ export default function WorkerPage() {
                 <span style={{ color: 'var(--gray)', fontSize: '0.85rem' }}>({worker.numReviews} avis · {worker.completedJobs} missions)</span>
               </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
+            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
               {worker.dailyRate && (
                 <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)' }}>
                   {worker.dailyRate.toLocaleString('fr-FR')} FCFA
                   <div style={{ fontSize: '0.78rem', color: 'var(--gray)', fontWeight: 400 }}>par jour</div>
                 </div>
               )}
+              
+              {/* Bouton WhatsApp (remplace l'ancien bouton Contacter) */}
               {u.phone && (
-                <a href={`tel:${u.phone}`} className="btn btn-primary" style={{ marginTop: '0.8rem' }}>
-                  <FiPhone /> Contacter
-                </a>
+                <WhatsAppButton
+                  nom={u.name}
+                  metier={worker.specialty}
+                  telephone={u.phone}
+                  variant="detail"
+                />
               )}
+              
               {user && u._id && String(user._id) !== String(u._id) && (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.45rem', marginTop: '0.6rem' }}>
                   <Link to={`/devis?worker=${id}`} className="btn btn-outline btn-sm">Demander un devis</Link>
