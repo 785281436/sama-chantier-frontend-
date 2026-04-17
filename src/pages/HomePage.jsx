@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { FiTruck, FiShield, FiHeadphones, FiArrowRight } from 'react-icons/fi'
 import api from '../utils/api'
 import ProductCard from '../components/common/ProductCard'
+import TopWorkersSection from '../components/common/TopWorkersSection'
 import './HomePage.css'
 
 const HomePage = () => {
@@ -114,6 +115,9 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+
+      {/* ========== TOP WORKERS SECTION ========== */}
+      <TopWorkersSection />
 
       {/* ========== CTA FINAL ========== */}
       <section className="cta-section">

@@ -9,7 +9,6 @@ const PAYMENT_METHODS = [
   { key: 'wave',         label: '💳 Wave' },
   { key: 'orange_money', label: '📱 Orange Money' },
   { key: 'free_money',   label: '📲 Free Money' },
-  { key: 'cinetpay',     label: '🏦 CinetPay (carte & mobile money)' },
   { key: 'cash',         label: '💵 Paiement à la livraison' },
 ]
 
@@ -34,20 +33,6 @@ export default function CheckoutPage() {
         notes: form.notes,
       })
       setOrderId(data._id)
-      if (form.paymentMethod === 'cinetpay') {
-        try {
-          const { data: pay } = await api.post('/payments/cinetpay/init', { orderId: data._id })
-          if (pay.paymentUrl) {
-            clearCart()
-            window.location.href = pay.paymentUrl
-            return
-          }
-        } catch (err) {
-          toast.error(err.response?.data?.message || 'CinetPay indisponible')
-          setLoading(false)
-          return
-        }
-      }
       clearCart()
       setStep(3)
     } catch (err) {

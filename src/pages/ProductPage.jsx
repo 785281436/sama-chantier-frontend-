@@ -17,7 +17,6 @@ export default function ProductPage() {
   const [qty, setQty]         = useState(1)
   const [loading, setLoading] = useState(true)
   const [myReview, setMyReview] = useState({ rating: 5, comment: '' })
-  const [imgIndex, setImgIndex] = useState(0)
 
   useEffect(() => {
     const load = async () => {
@@ -28,7 +27,6 @@ export default function ProductPage() {
         ])
         setProduct(p.data)
         setReviews(r.data)
-        setImgIndex(0)
       } catch (_) {}
       setLoading(false)
     }
@@ -56,9 +54,6 @@ export default function ProductPage() {
   if (loading) return <div className="spinner" style={{ marginTop: '4rem' }} />
   if (!product) return <div className="container" style={{ padding: '3rem 0' }}>Produit introuvable.</div>
 
-  const images = product.images?.filter(Boolean).length ? product.images.filter(Boolean) : ['https://placehold.co/500x400?text=Produit']
-  const mainSrc = images[Math.min(imgIndex, images.length - 1)]
-
   return (
     <div className="page-wrapper">
       <div className="container">
@@ -67,38 +62,10 @@ export default function ProductPage() {
         </Link>
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', marginBottom: '3rem' }}>
-          <div>
-            <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', aspectRatio: '4/3', background: 'var(--gray-light)' }}>
-              <img
-                src={mainSrc}
-                alt={product.name}
-                style={{ width: '100%', height: '100%', objectFit: 'cover', cursor: images.length > 1 ? 'pointer' : 'default' }}
-                onError={e => { e.target.src = 'https://placehold.co/500x400?text=Image' }}
-              />
-            </div>
-            {images.length > 1 && (
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
-                {images.map((src, i) => (
-                  <button
-                    key={src + i}
-                    type="button"
-                    onClick={() => setImgIndex(i)}
-                    style={{
-                      padding: 0,
-                      border: i === imgIndex ? '2px solid var(--primary)' : '2px solid var(--border)',
-                      borderRadius: 8,
-                      width: 64,
-                      height: 64,
-                      overflow: 'hidden',
-                      cursor: 'pointer',
-                      background: 'var(--gray-light)',
-                    }}
-                  >
-                    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={e => { e.target.src = 'https://placehold.co/64?text=×' }} />
-                  </button>
-                ))}
-              </div>
-            )}
+          {/* Image */}
+          <div style={{ borderRadius: 'var(--radius)', overflow: 'hidden', aspectRatio: '4/3', background: 'var(--gray-light)' }}>
+            <img src={product.images?.[0] || 'https://placehold.co/500x400?text=Produit'} alt={product.name}
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
 
           {/* Info */}

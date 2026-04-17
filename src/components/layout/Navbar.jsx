@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { FiShoppingCart, FiUser, FiMenu, FiX, FiLogOut, FiSettings, FiMessageCircle, FiFileText } from 'react-icons/fi'
+import { FiShoppingCart, FiUser, FiMenu, FiX, FiLogOut, FiSettings } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext'
 import { useCart } from '../../context/CartContext'
 import './Navbar.css'
@@ -50,8 +50,6 @@ export default function Navbar() {
                   <p className="navbar__dropdown-name">{user.name}</p>
                   <Link to="/profil" onClick={() => setDropOpen(false)}><FiUser /> Mon profil</Link>
                   <Link to="/mes-commandes" onClick={() => setDropOpen(false)}><FiSettings /> Mes commandes</Link>
-                  <Link to="/devis" onClick={() => setDropOpen(false)}><FiFileText /> Devis</Link>
-                  <Link to="/messages" onClick={() => setDropOpen(false)}><FiMessageCircle /> Messages</Link>
                   {user.role === 'admin' && (
                     <Link to="/admin" onClick={() => setDropOpen(false)}><FiSettings /> Administration</Link>
                   )}

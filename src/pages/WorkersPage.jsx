@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { FiSearch, FiMapPin, FiStar, FiCheckCircle } from 'react-icons/fi'
 import api from '../utils/api'
@@ -25,7 +25,6 @@ export default function WorkersPage() {
   const [filters, setFilters]   = useState({
     specialty: '', city: '', available: ''
   })
-  const searchDebounce = useRef(null)
 
   const load = async (f, kw = '') => {
     setLoading(true)
@@ -76,10 +75,8 @@ export default function WorkersPage() {
             placeholder="Rechercher par nom…"
             value={keyword}
             onChange={e => {
-              const v = e.target.value
-              setKeyword(v)
-              clearTimeout(searchDebounce.current)
-              searchDebounce.current = setTimeout(() => load(filters, v), 350)
+              setKeyword(e.target.value)
+              load(filters, e.target.value)
             }}
           />
         </div>

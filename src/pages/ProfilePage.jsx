@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { toast } from 'react-toastify'
 import api from '../utils/api'
@@ -10,20 +10,7 @@ export default function ProfilePage() {
     address: user?.address || '', city: user?.city || '', newPassword: '',
   })
   const [loading, setLoading] = useState(false)
-  const [workerProfile, setWorkerProfile] = useState(null)
-  const [portfolioUrls, setPortfolioUrls] = useState('')
-  const [savingPortfolio, setSavingPortfolio] = useState(false)
   const set = k => e => setForm(f => ({ ...f, [k]: e.target.value }))
-
-  useEffect(() => {
-    if (user?.role !== 'worker') return
-    api.get('/workers/me')
-      .then(r => {
-        setWorkerProfile(r.data)
-        setPortfolioUrls((r.data.portfolio || []).join('\n'))
-      })
-      .catch(() => setWorkerProfile(null))
-  }, [user?.role])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -38,39 +25,6 @@ export default function ProfilePage() {
       toast.error(err.response?.data?.message || 'Erreur')
     }
     setLoading(false)
-  }
-
-  const savePortfolio = async (e) => {
-    e.preventDefault()
-    if (!workerProfile?._id) return
-    setSavingPortfolio(true)
-    try {
-      const portfolio = portfolioUrls.split(/\n/).map(s => s.trim()).filter(Boolean)
-      const { data } = await api.put(`/workers/${workerProfile._id}`, { portfolio })
-      setWorkerProfile(data)
-      toast.success('Portfolio mis à jour')
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Erreur')
-    }
-    setSavingPortfolio(false)
-  }
-
-  const uploadPortfolioImage = async (e) => {
-    const file = e.target.files?.[0]
-    if (!file || !workerProfile?._id) return
-    const fd = new FormData()
-    fd.append('image', file)
-    try {
-      const { data } = await api.post('/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
-      const url = data.url || data.secure_url
-      if (url) {
-        setPortfolioUrls(prev => (prev ? `${prev}\n${url}` : url))
-        toast.success('Image ajoutée (enregistrez le portfolio)')
-      }
-    } catch {
-      toast.error('Échec upload')
-    }
-    e.target.value = ''
   }
 
   return (
@@ -115,26 +69,6 @@ export default function ProfilePage() {
               {loading ? 'Mise à jour…' : 'Sauvegarder'}
             </button>
           </form>
-
-          {user?.role === 'worker' && workerProfile && (
-            <form onSubmit={savePortfolio} style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid var(--border)' }}>
-              <h3 style={{ fontWeight: 800, marginBottom: '0.75rem' }}>Portfolio chantiers</h3>
-              <p style={{ color: 'var(--gray)', fontSize: '0.88rem', marginBottom: '0.75rem' }}>
-                Une URL par ligne (images Cloudinary ou liens publics). Vous pouvez aussi envoyer une image :
-              </p>
-              <input type="file" accept="image/*" onChange={uploadPortfolioImage} style={{ marginBottom: '0.75rem' }} />
-              <textarea
-                className="form-control"
-                rows={5}
-                placeholder="https://…"
-                value={portfolioUrls}
-                onChange={e => setPortfolioUrls(e.target.value)}
-              />
-              <button type="submit" className="btn btn-primary btn-full" style={{ marginTop: '0.75rem' }} disabled={savingPortfolio}>
-                {savingPortfolio ? 'Enregistrement…' : 'Enregistrer le portfolio'}
-              </button>
-            </form>
-          )}
         </div>
       </div>
     </div>

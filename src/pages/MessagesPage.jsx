@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { FiArrowLeft, FiSend } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import api from '../utils/api'
@@ -7,7 +7,6 @@ import { useAuth } from '../context/AuthContext'
 
 export default function MessagesPage() {
   const { user } = useAuth()
-  const [searchParams] = useSearchParams()
   const [contacts, setContacts] = useState([])
   const [activeId, setActiveId] = useState(null)
   const [thread, setThread] = useState([])
@@ -41,11 +40,6 @@ export default function MessagesPage() {
   }, [])
 
   useEffect(() => {
-    const to = searchParams.get('to')
-    if (to) setActiveId(to)
-  }, [searchParams])
-
-  useEffect(() => {
     if (activeId) loadThread(activeId)
     if (pollRef.current) clearInterval(pollRef.current)
     if (activeId) {
@@ -69,7 +63,7 @@ export default function MessagesPage() {
 
   if (!user) return null
 
-  const active = contacts.find(c => c._id === activeId) || (activeId ? { _id: activeId, name: 'Conversation' } : null)
+  const active = contacts.find(c => c._id === activeId)
 
   return (
     <div className="page-wrapper">
@@ -112,7 +106,7 @@ export default function MessagesPage() {
             )}
             <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: 360 }}>
               {thread.map(m => {
-                const mine = String(m.sender?._id || m.sender) === String(user._id)
+                const mine = m.sender?._id === user._id || m.sender === user._id
                 return (
                   <div
                     key={m._id}
@@ -148,7 +142,7 @@ export default function MessagesPage() {
           </div>
         </div>
         <p style={{ color: 'var(--gray)', fontSize: '0.82rem', marginTop: '1rem' }}>
-          Depuis un profil ouvrier, utilisez « Écrire » pour ouvrir la conversation avec cet artisan.
+          Astuce : pour écrire à quelqu’un, utilisez son identifiant utilisateur (admin) ou une future liste d’utilisateurs. Les conversations apparaissent après le premier message reçu.
         </p>
       </div>
     </div>
