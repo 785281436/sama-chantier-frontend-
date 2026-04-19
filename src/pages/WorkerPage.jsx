@@ -1,15 +1,17 @@
 /* eslint-disable no-empty */
 /* eslint-disable no-unused-vars */
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { FiStar, FiMapPin, FiPhone, FiCheckCircle, FiArrowLeft, FiBriefcase } from 'react-icons/fi'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { FiStar, FiMapPin, FiPhone, FiCheckCircle, FiArrowLeft, FiBriefcase, FiMessageCircle } from 'react-icons/fi'
 import { toast } from 'react-toastify'
 import api from '../utils/api'
 import { useAuth } from '../context/AuthContext'
 import WorkerPortfolio from '../components/worker/WorkerPortfolio';
+import WhatsAppButton from '../components/common/WhatsAppButton'
 
 export default function WorkerPage() {
   const { id } = useParams()
+  const navigate = useNavigate()
   const { user } = useAuth()
   const [worker, setWorker]   = useState(null)
   const [reviews, setReviews] = useState([])
@@ -82,20 +84,46 @@ export default function WorkerPage() {
                 <span style={{ color: 'var(--gray)', fontSize: '0.85rem' }}>({worker.numReviews} avis · {worker.completedJobs} missions)</span>
               </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
+
+            {/* Boutons WhatsApp, Appeler et Message */}
+            <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: '180px' }}>
               {worker.dailyRate && (
                 <div style={{ fontSize: '1.5rem', fontWeight: 900, color: 'var(--primary)' }}>
                   {worker.dailyRate.toLocaleString('fr-FR')} FCFA
                   <div style={{ fontSize: '0.78rem', color: 'var(--gray)', fontWeight: 400 }}>par jour</div>
                 </div>
               )}
+              
+              {/* Bouton WhatsApp */}
               {u.phone && (
-                <a href={`tel:${u.phone}`} className="btn btn-primary" style={{ marginTop: '0.8rem' }}>
-                  <FiPhone /> Contacter
+                <WhatsAppButton
+                  nom={u.name}
+                  metier={worker.specialty}
+                  telephone={u.phone}
+                  variant="detail"
+                />
+              )}
+              
+              {/* Bouton Appeler */}
+              {u.phone && (
+                <a href={`tel:${u.phone}`} className="btn btn-primary" style={{ marginTop: '0', textAlign: 'center', display: 'block' }}>
+                  <FiPhone /> Appeler
                 </a>
+              )}
+
+              {/* Bouton Envoyer un message */}
+              {user && user._id !== worker.user?._id && (
+                <button
+                  className="btn btn-dark"
+                  onClick={() => navigate(`/messages/${worker.user?._id}`)}
+                  style={{ marginTop: '0.5rem', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                >
+                  <FiMessageCircle /> Envoyer un message
+                </button>
               )}
             </div>
           </div>
+
           {worker.bio && (
             <p style={{ marginTop: '1.2rem', color: 'var(--gray)', lineHeight: 1.7, borderTop: '1px solid var(--border)', paddingTop: '1rem' }}>
               {worker.bio}

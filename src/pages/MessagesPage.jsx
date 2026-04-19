@@ -1,149 +1,56 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { FiArrowLeft, FiSend } from 'react-icons/fi'
-import { toast } from 'react-toastify'
+import { FiMessageCircle } from 'react-icons/fi'
 import api from '../utils/api'
-import { useAuth } from '../context/AuthContext'
+import './MessagesPage.css'
 
 export default function MessagesPage() {
-  const { user } = useAuth()
-  const [contacts, setContacts] = useState([])
-  const [activeId, setActiveId] = useState(null)
-  const [thread, setThread] = useState([])
-  const [text, setText] = useState('')
-  const bottomRef = useRef(null)
-  const pollRef = useRef(null)
-
-  const loadContacts = async () => {
-    try {
-      const { data } = await api.get('/messages/contacts')
-      setContacts(data)
-      if (!activeId && data[0]?._id) setActiveId(data[0]._id)
-    } catch {
-      toast.error('Impossible de charger les contacts')
-    }
-  }
-
-  const loadThread = async (userId) => {
-    if (!userId) return
-    try {
-      const { data } = await api.get(`/messages/thread/${userId}`)
-      setThread(data)
-      setTimeout(() => bottomRef.current?.scrollIntoView({ behavior: 'smooth' }), 50)
-    } catch {
-      toast.error('Impossible de charger la conversation')
-    }
-  }
+  const [conversations, setConversations] = useState([])
+  const [loading, setLoading]             = useState(true)
 
   useEffect(() => {
-    loadContacts()
+    api.get('/messages/conversations')
+      .then(r => setConversations(r.data))
+      .catch(() => {})
+      .finally(() => setLoading(false))
   }, [])
-
-  useEffect(() => {
-    if (activeId) loadThread(activeId)
-    if (pollRef.current) clearInterval(pollRef.current)
-    if (activeId) {
-      pollRef.current = setInterval(() => loadThread(activeId), 5000)
-    }
-    return () => clearInterval(pollRef.current)
-  }, [activeId])
-
-  const send = async (e) => {
-    e.preventDefault()
-    if (!text.trim() || !activeId) return
-    try {
-      const { data } = await api.post('/messages', { to: activeId, content: text.trim() })
-      setThread(t => [...t, data])
-      setText('')
-      loadContacts()
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Erreur')
-    }
-  }
-
-  if (!user) return null
-
-  const active = contacts.find(c => c._id === activeId)
 
   return (
     <div className="page-wrapper">
-      <div className="container" style={{ maxWidth: 960 }}>
-        <Link to="/" className="btn btn-outline btn-sm" style={{ marginBottom: '1rem' }}>
-          <FiArrowLeft /> Accueil
-        </Link>
-        <h1 className="section-title">Messages</h1>
-        <div style={{ display: 'grid', gridTemplateColumns: '240px 1fr', gap: '1rem', minHeight: 420, alignItems: 'stretch' }}>
-          <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
-            {contacts.length === 0 && <p style={{ padding: '1rem', color: 'var(--gray)', fontSize: '0.88rem' }}>Aucune conversation.</p>}
-            {contacts.map(c => (
-              <button
-                key={c._id}
-                type="button"
-                onClick={() => setActiveId(c._id)}
-                style={{
-                  width: '100%',
-                  textAlign: 'left',
-                  padding: '0.75rem 1rem',
-                  border: 'none',
-                  borderBottom: '1px solid var(--border)',
-                  background: activeId === c._id ? 'var(--primary-light)' : '#fff',
-                  cursor: 'pointer',
-                  fontWeight: activeId === c._id ? 700 : 500,
-                }}
-              >
-                {c.name}
-                {(c.unread || 0) > 0 && (
-                  <span style={{ marginLeft: 6, background: 'var(--primary)', color: '#fff', borderRadius: 99, padding: '0 6px', fontSize: '0.72rem' }}>{c.unread}</span>
+      <div className="container" style={{ maxWidth: 600 }}>
+        <h1 className="section-title">
+          <FiMessageCircle /> Messages
+        </h1>
+
+        {loading ? <div className="spinner" /> : conversations.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--gray)' }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>💬</div>
+            <p>Aucune conversation pour le moment</p>
+            <Link to="/ouvriers" className="btn btn-primary" style={{ marginTop: '1rem' }}>
+              Trouver un ouvrier
+            </Link>
+          </div>
+        ) : (
+          <div className="conversations-list">
+            {conversations.map(conv => (
+              <Link key={conv.id} to={`/messages/${conv.otherUser._id}`}
+                className="conversation-item card">
+                <div className="conversation-item__avatar">
+                  {conv.otherUser.name?.[0]?.toUpperCase()}
+                </div>
+                <div className="conversation-item__info">
+                  <p className="conversation-item__name">{conv.otherUser.name}</p>
+                  <p className="conversation-item__last">
+                    {conv.lastMessage.content.substring(0, 40)}...
+                  </p>
+                </div>
+                {conv.unread > 0 && (
+                  <span className="conversation-item__badge">{conv.unread}</span>
                 )}
-              </button>
+              </Link>
             ))}
           </div>
-          <div className="card" style={{ padding: 0, display: 'flex', flexDirection: 'column' }}>
-            {active && (
-              <div style={{ padding: '0.9rem 1rem', borderBottom: '1px solid var(--border)', fontWeight: 800 }}>
-                {active.name}
-              </div>
-            )}
-            <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', maxHeight: 360 }}>
-              {thread.map(m => {
-                const mine = m.sender?._id === user._id || m.sender === user._id
-                return (
-                  <div
-                    key={m._id}
-                    style={{
-                      alignSelf: mine ? 'flex-end' : 'flex-start',
-                      maxWidth: '78%',
-                      padding: '0.55rem 0.85rem',
-                      borderRadius: 12,
-                      background: mine ? 'var(--primary)' : 'var(--gray-light)',
-                      color: mine ? '#fff' : 'inherit',
-                      fontSize: '0.9rem',
-                    }}
-                  >
-                    {m.content}
-                    <div style={{ fontSize: '0.7rem', opacity: 0.85, marginTop: 4 }}>
-                      {new Date(m.createdAt).toLocaleString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
-                    </div>
-                  </div>
-                )
-              })}
-              <div ref={bottomRef} />
-            </div>
-            <form onSubmit={send} style={{ display: 'flex', gap: '0.5rem', padding: '0.75rem', borderTop: '1px solid var(--border)' }}>
-              <input
-                className="form-control"
-                placeholder="Votre message…"
-                value={text}
-                onChange={e => setText(e.target.value)}
-                disabled={!activeId}
-              />
-              <button type="submit" className="btn btn-primary" disabled={!activeId || !text.trim()}><FiSend /></button>
-            </form>
-          </div>
-        </div>
-        <p style={{ color: 'var(--gray)', fontSize: '0.82rem', marginTop: '1rem' }}>
-          Astuce : pour écrire à quelqu’un, utilisez son identifiant utilisateur (admin) ou une future liste d’utilisateurs. Les conversations apparaissent après le premier message reçu.
-        </p>
+        )}
       </div>
     </div>
   )
